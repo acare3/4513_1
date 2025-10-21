@@ -1,7 +1,4 @@
-const express = require('express');
 const db = require('../db');
-
-const router = express.Router();
 
 // Shared SELECT used by the results endpoints to keep the SQL consistent across queries.
 const baseResultsQuery = `
@@ -75,99 +72,101 @@ const mapResult = (row) => ({
   },
 });
 
-/**
- * Endpoint: GET /api/results/drivers/:ref/seasons/:start/:end
- * Description: Retrieves results for a driver across an inclusive range of seasons.
- * Path Parameters:
- *  - ref: Driver reference (case-insensitive).
- *  - start: Starting season year.
- *  - end: Ending season year.
- * Response: JSON array of results or 404 if none match. Returns 400 when the range is invalid.
- */
-router.get('/drivers/:ref/seasons/:start/:end', async (req, res) => {
-  const { ref, start, end } = req.params;
+const registerResultRoutes = (app) => {
+  /**
+   * Endpoint: GET /api/results/drivers/:ref/seasons/:start/:end
+   * Description: Retrieves results for a driver across an inclusive range of seasons.
+   * Path Parameters:
+   *  - ref: Driver reference (case-insensitive).
+   *  - start: Starting season year.
+   *  - end: Ending season year.
+   * Response: JSON array of results or 404 if none match. Returns 400 when the range is invalid.
+   */
+  app.get('/api/results/drivers/:ref/seasons/:start/:end', async (req, res) => {
+    const { ref, start, end } = req.params;
 
-  if (Number(end) < Number(start)) {
-    return res
-      .status(400)
-      .json({ error: 'End year must be greater than or equal to start year.' });
-  }
-
-  try {
-    const rows = await db.all(
-      `${baseResultsQuery}
-       WHERE LOWER(d.driverRef) = LOWER(?) AND ra.year BETWEEN ? AND ?
-       ORDER BY ra.year ASC, ra.round ASC, r.grid ASC`,
-      [ref, start, end]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({
-        error: `No results found for driver '${ref}' between seasons ${start} and ${end}.`,
-      });
+    if (Number(end) < Number(start)) {
+      return res
+        .status(400)
+        .json({ error: 'End year must be greater than or equal to start year.' });
     }
 
-    res.json(rows.map(mapResult));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
-});
+    try {
+      const rows = await db.all(
+        `${baseResultsQuery}
+         WHERE LOWER(d.driverRef) = LOWER(?) AND ra.year BETWEEN ? AND ?
+         ORDER BY ra.year ASC, ra.round ASC, r.grid ASC`,
+        [ref, start, end]
+      );
 
-/**
- * Endpoint: GET /api/results/driver/:ref
- * Description: Retrieves every recorded result for a specific driver.
- * Path Parameters:
- *  - ref: Driver reference (case-insensitive).
- * Response: JSON array of results or 404 if the driver has no results.
- */
-router.get('/driver/:ref', async (req, res) => {
-  const { ref } = req.params;
-  try {
-    const rows = await db.all(
-      `${baseResultsQuery}
-       WHERE LOWER(d.driverRef) = LOWER(?)
-       ORDER BY ra.year ASC, ra.round ASC, r.grid ASC`,
-      [ref]
-    );
+      if (rows.length === 0) {
+        return res.status(404).json({
+          error: `No results found for driver '${ref}' between seasons ${start} and ${end}.`,
+        });
+      }
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: `No results found for driver '${ref}'.` });
+      res.json(rows.map(mapResult));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An unexpected error occurred.' });
     }
+  });
 
-    res.json(rows.map(mapResult));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
-});
+  /**
+   * Endpoint: GET /api/results/driver/:ref
+   * Description: Retrieves every recorded result for a specific driver.
+   * Path Parameters:
+   *  - ref: Driver reference (case-insensitive).
+   * Response: JSON array of results or 404 if the driver has no results.
+   */
+  app.get('/api/results/driver/:ref', async (req, res) => {
+    const { ref } = req.params;
+    try {
+      const rows = await db.all(
+        `${baseResultsQuery}
+         WHERE LOWER(d.driverRef) = LOWER(?)
+         ORDER BY ra.year ASC, ra.round ASC, r.grid ASC`,
+        [ref]
+      );
 
-/**
- * Endpoint: GET /api/results/:raceId
- * Description: Retrieves classified results for a specific race.
- * Path Parameters:
- *  - raceId: Race identifier.
- * Response: JSON array of results or 404 if the race has no results.
- */
-router.get('/:raceId', async (req, res) => {
-  const { raceId } = req.params;
-  try {
-    const rows = await db.all(
-      `${baseResultsQuery}
-       WHERE r.raceId = ?
-       ORDER BY r.grid ASC`,
-      [raceId]
-    );
+      if (rows.length === 0) {
+        return res.status(404).json({ error: `No results found for driver '${ref}'.` });
+      }
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: `No results found for race ${raceId}.` });
+      res.json(rows.map(mapResult));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An unexpected error occurred.' });
     }
+  });
 
-    res.json(rows.map(mapResult));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
-});
+  /**
+   * Endpoint: GET /api/results/:raceId
+   * Description: Retrieves classified results for a specific race.
+   * Path Parameters:
+   *  - raceId: Race identifier.
+   * Response: JSON array of results or 404 if the race has no results.
+   */
+  app.get('/api/results/:raceId', async (req, res) => {
+    const { raceId } = req.params;
+    try {
+      const rows = await db.all(
+        `${baseResultsQuery}
+         WHERE r.raceId = ?
+         ORDER BY r.grid ASC`,
+        [raceId]
+      );
 
-module.exports = router;
+      if (rows.length === 0) {
+        return res.status(404).json({ error: `No results found for race ${raceId}.` });
+      }
+
+      res.json(rows.map(mapResult));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An unexpected error occurred.' });
+    }
+  });
+};
+
+module.exports = registerResultRoutes;

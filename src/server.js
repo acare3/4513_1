@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 
-const circuitsRouter = require('./routes/circuits');
-const constructorsRouter = require('./routes/constructors');
-const driversRouter = require('./routes/drivers');
-const racesRouter = require('./routes/races');
-const resultsRouter = require('./routes/results');
-const qualifyingRouter = require('./routes/qualifying');
-const standingsRouter = require('./routes/standings');
+const registerCircuitRoutes = require('./routes/circuits');
+const registerConstructorRoutes = require('./routes/constructors');
+const registerDriverRoutes = require('./routes/drivers');
+const registerRaceRoutes = require('./routes/races');
+const registerResultRoutes = require('./routes/results');
+const registerQualifyingRoutes = require('./routes/qualifying');
+const registerStandingRoutes = require('./routes/standings');
 
 const app = express();
 
@@ -24,17 +24,17 @@ app.use(express.json());
  * Description: Health check route that confirms the API is running.
  * Response: JSON message greeting the client.
  */
-app.get('/', (_req, res) => {
+app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Formula 1 API.' });
 });
 
-app.use('/api/circuits', circuitsRouter);
-app.use('/api/constructors', constructorsRouter);
-app.use('/api/drivers', driversRouter);
-app.use('/api/races', racesRouter);
-app.use('/api/results', resultsRouter);
-app.use('/api/qualifying', qualifyingRouter);
-app.use('/api/standings', standingsRouter);
+registerCircuitRoutes(app);
+registerConstructorRoutes(app);
+registerDriverRoutes(app);
+registerRaceRoutes(app);
+registerResultRoutes(app);
+registerQualifyingRoutes(app);
+registerStandingRoutes(app);
 
 /**
  * Catch-all handler for unsupported routes ensuring a consistent JSON error response.

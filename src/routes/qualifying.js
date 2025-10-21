@@ -1,7 +1,4 @@
-const express = require('express');
 const db = require('../db');
-
-const router = express.Router();
 
 /**
  * Normalizes a qualifying row into a nested payload.
@@ -44,33 +41,35 @@ const mapEntry = (row) => ({
  *  - raceId: Race identifier.
  * Response: JSON array ordered by qualifying position or 404 if no entries exist.
  */
-router.get('/:raceId', async (req, res) => {
-  const { raceId } = req.params;
-  try {
-    const rows = await db.all(
-      `SELECT q.qualifyId, q.number, q.position, q.q1, q.q2, q.q3,
-              d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
-              d.nationality AS driverNationality, d.url AS driverUrl,
-              c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
-              r.name AS raceName, r.round AS raceRound, r.year AS raceYear, r.date AS raceDate
-       FROM qualifying q
-       INNER JOIN drivers d ON d.driverId = q.driverId
-       INNER JOIN constructors c ON c.constructorId = q.constructorId
-       INNER JOIN races r ON r.raceId = q.raceId
-       WHERE q.raceId = ?
-       ORDER BY q.position ASC`,
-      [raceId]
-    );
+const registerQualifyingRoutes = (app) => {
+  app.get('/api/qualifying/:raceId', async (req, res) => {
+    const { raceId } = req.params;
+    try {
+      const rows = await db.all(
+        `SELECT q.qualifyId, q.number, q.position, q.q1, q.q2, q.q3,
+                d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
+                d.nationality AS driverNationality, d.url AS driverUrl,
+                c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
+                r.name AS raceName, r.round AS raceRound, r.year AS raceYear, r.date AS raceDate
+         FROM qualifying q
+         INNER JOIN drivers d ON d.driverId = q.driverId
+         INNER JOIN constructors c ON c.constructorId = q.constructorId
+         INNER JOIN races r ON r.raceId = q.raceId
+         WHERE q.raceId = ?
+         ORDER BY q.position ASC`,
+        [raceId]
+      );
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: `No qualifying results found for race ${raceId}.` });
+      if (rows.length === 0) {
+        return res.status(404).json({ error: `No qualifying results found for race ${raceId}.` });
+      }
+
+      res.json(rows.map(mapEntry));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An unexpected error occurred.' });
     }
+  });
+};
 
-    res.json(rows.map(mapEntry));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
-});
-
-module.exports = router;
+module.exports = registerQualifyingRoutes;
