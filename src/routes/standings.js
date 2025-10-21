@@ -14,11 +14,12 @@ router.get('/drivers/:raceId', async (req, res) => {
   const { raceId } = req.params;
   try {
     const rows = await db.all(
-      `SELECT ds.driverStandingsId, ds.points, ds.position, ds.positionText, ds.wins,
-              d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
+      `SELECT ds.driverStandingsId, ds.raceId, ds.points, ds.position, ds.positionText, ds.wins,
+              d.driverId, d.driverRef, d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
               d.nationality AS driverNationality, d.url AS driverUrl,
-              r.name AS raceName, r.round AS raceRound, r.year AS raceYear, r.date AS raceDate
-       FROM driver_standings ds
+              r.name AS raceName, r.round AS raceRound, r.year AS raceYear, r.date AS raceDate,
+              r.time AS raceTime, r.url AS raceUrl
+       FROM driverStandings ds
        INNER JOIN drivers d ON d.driverId = ds.driverId
        INNER JOIN races r ON r.raceId = ds.raceId
        WHERE ds.raceId = ?
@@ -38,6 +39,8 @@ router.get('/drivers/:raceId', async (req, res) => {
         points: row.points,
         wins: row.wins,
         driver: {
+          driverId: row.driverId,
+          driverRef: row.driverRef,
           number: row.driverNumber,
           code: row.driverCode,
           forename: row.forename,
@@ -47,10 +50,13 @@ router.get('/drivers/:raceId', async (req, res) => {
           url: row.driverUrl,
         },
         race: {
+          raceId: row.raceId,
           name: row.raceName,
           round: row.raceRound,
           year: row.raceYear,
           date: row.raceDate,
+          time: row.raceTime,
+          url: row.raceUrl,
         },
       }))
     );
@@ -71,10 +77,11 @@ router.get('/constructors/:raceId', async (req, res) => {
   const { raceId } = req.params;
   try {
     const rows = await db.all(
-      `SELECT cs.constructorStandingsId, cs.points, cs.position, cs.positionText, cs.wins,
-              c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
-              r.name AS raceName, r.round AS raceRound, r.year AS raceYear, r.date AS raceDate
-       FROM constructor_standings cs
+      `SELECT cs.constructorStandingsId, cs.raceId, cs.points, cs.position, cs.positionText, cs.wins,
+              c.constructorId, c.constructorRef, c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
+              r.name AS raceName, r.round AS raceRound, r.year AS raceYear, r.date AS raceDate,
+              r.time AS raceTime, r.url AS raceUrl
+       FROM constructorStandings cs
        INNER JOIN constructors c ON c.constructorId = cs.constructorId
        INNER JOIN races r ON r.raceId = cs.raceId
        WHERE cs.raceId = ?
@@ -96,15 +103,20 @@ router.get('/constructors/:raceId', async (req, res) => {
         points: row.points,
         wins: row.wins,
         constructor: {
+          constructorId: row.constructorId,
+          constructorRef: row.constructorRef,
           name: row.constructorName,
           nationality: row.constructorNationality,
           url: row.constructorUrl,
         },
         race: {
+          raceId: row.raceId,
           name: row.raceName,
           round: row.raceRound,
           year: row.raceYear,
           date: row.raceDate,
+          time: row.raceTime,
+          url: row.raceUrl,
         },
       }))
     );

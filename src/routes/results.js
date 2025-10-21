@@ -5,18 +5,20 @@ const router = express.Router();
 
 // Shared SELECT used by the results endpoints to keep the SQL consistent across queries.
 const baseResultsQuery = `
-  SELECT r.resultId, r.number AS resultNumber, r.grid, r.position,
-         r.positionText, r.points, r.laps, r.time, r.milliseconds, r.fastestLap, r.rank,
-         r.fastestLapTime, r.fastestLapSpeed, s.status AS statusText,
-         d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
+  SELECT r.resultId, r.raceId, r.number AS resultNumber, r.grid, r.position,
+         r.positionText, r.positionOrder, r.points, r.laps, r.time, r.milliseconds,
+         r.fastestLap, r.rank, r.fastestLapTime, r.fastestLapSpeed, r.statusId,
+         s.status AS statusText,
+         d.driverId, d.driverRef, d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
          d.nationality AS driverNationality, d.url AS driverUrl,
-         c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
-         ra.name AS raceName, ra.round AS raceRound, ra.year AS raceYear, ra.date AS raceDate
+         c.constructorId, c.constructorRef, c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
+         ra.name AS raceName, ra.round AS raceRound, ra.year AS raceYear, ra.date AS raceDate,
+         ra.time AS raceTime, ra.url AS raceUrl
   FROM results r
   INNER JOIN drivers d ON d.driverId = r.driverId
   INNER JOIN constructors c ON c.constructorId = r.constructorId
   INNER JOIN races ra ON ra.raceId = r.raceId
-  INNER JOIN statuses s ON s.statusId = r.statusId
+  INNER JOIN status s ON s.statusId = r.statusId
 `;
 
 /**
@@ -26,10 +28,12 @@ const baseResultsQuery = `
  */
 const mapResult = (row) => ({
   resultId: row.resultId,
+  raceId: row.raceId,
   number: row.resultNumber,
   grid: row.grid,
   position: row.position,
   positionText: row.positionText,
+  positionOrder: row.positionOrder,
   points: row.points,
   laps: row.laps,
   time: row.time,
@@ -38,8 +42,13 @@ const mapResult = (row) => ({
   rank: row.rank,
   fastestLapTime: row.fastestLapTime,
   fastestLapSpeed: row.fastestLapSpeed,
-  status: row.statusText,
+  status: {
+    statusId: row.statusId,
+    status: row.statusText,
+  },
   driver: {
+    driverId: row.driverId,
+    driverRef: row.driverRef,
     number: row.driverNumber,
     code: row.driverCode,
     forename: row.forename,
@@ -49,12 +58,17 @@ const mapResult = (row) => ({
     url: row.driverUrl,
   },
   race: {
+    raceId: row.raceId,
     name: row.raceName,
     round: row.raceRound,
     year: row.raceYear,
     date: row.raceDate,
+    time: row.raceTime,
+    url: row.raceUrl,
   },
   constructor: {
+    constructorId: row.constructorId,
+    constructorRef: row.constructorRef,
     name: row.constructorName,
     nationality: row.constructorNationality,
     url: row.constructorUrl,
