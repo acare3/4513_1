@@ -17,8 +17,6 @@ const mapRace = (row) => ({
   time: row.time,
   url: row.url,
   circuit: {
-    circuitId: row.circuitId,
-    circuitRef: row.circuitRef,
     name: row.circuitName,
     location: row.location,
     country: row.country,
@@ -38,7 +36,7 @@ router.get('/season/:year/:round', async (req, res) => {
   try {
     const race = await db.get(
       `SELECT r.raceId, r.year, r.round, r.name AS raceName, r.date, r.time, r.url,
-              c.circuitId, c.circuitRef, c.name AS circuitName, c.location, c.country
+              c.name AS circuitName, c.location, c.country
        FROM races r
        INNER JOIN circuits c ON c.circuitId = r.circuitId
        WHERE r.year = ? AND r.round = ?`,
@@ -70,7 +68,7 @@ router.get('/season/:year', async (req, res) => {
   try {
     const races = await db.all(
       `SELECT r.raceId, r.year, r.round, r.name AS raceName, r.date, r.time, r.url,
-              c.circuitId, c.circuitRef, c.name AS circuitName, c.location, c.country
+              c.name AS circuitName, c.location, c.country
        FROM races r
        INNER JOIN circuits c ON c.circuitId = r.circuitId
        WHERE r.year = ?
@@ -110,7 +108,7 @@ router.get('/circuits/:ref/season/:start/:end', async (req, res) => {
   try {
     const races = await db.all(
       `SELECT r.raceId, r.year, r.round, r.name AS raceName, r.date, r.time, r.url,
-              c.circuitId, c.circuitRef, c.name AS circuitName, c.location, c.country
+              c.name AS circuitName, c.location, c.country
        FROM races r
        INNER JOIN circuits c ON c.circuitId = r.circuitId
        WHERE LOWER(c.circuitRef) = LOWER(?) AND r.year BETWEEN ? AND ?
@@ -143,7 +141,7 @@ router.get('/circuits/:ref', async (req, res) => {
   try {
     const races = await db.all(
       `SELECT r.raceId, r.year, r.round, r.name AS raceName, r.date, r.time, r.url,
-              c.circuitId, c.circuitRef, c.name AS circuitName, c.location, c.country
+              c.name AS circuitName, c.location, c.country
        FROM races r
        INNER JOIN circuits c ON c.circuitId = r.circuitId
        WHERE LOWER(c.circuitRef) = LOWER(?)
@@ -174,7 +172,7 @@ router.get('/:raceId', async (req, res) => {
   try {
     const race = await db.get(
       `SELECT r.raceId, r.year, r.round, r.name AS raceName, r.date, r.time, r.url,
-              c.circuitId, c.circuitRef, c.name AS circuitName, c.location, c.country
+              c.name AS circuitName, c.location, c.country
        FROM races r
        INNER JOIN circuits c ON c.circuitId = r.circuitId
        WHERE r.raceId = ?`,

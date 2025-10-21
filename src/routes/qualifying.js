@@ -10,35 +10,27 @@ const router = express.Router();
  */
 const mapEntry = (row) => ({
   qualifyId: row.qualifyId,
-  raceId: row.raceId,
-  driverId: row.driverId,
-  constructorId: row.constructorId,
   number: row.number,
   position: row.position,
   q1: row.q1,
   q2: row.q2,
   q3: row.q3,
   driver: {
-    driverId: row.driverId,
-    driverRef: row.driverRef,
     number: row.driverNumber,
     code: row.driverCode,
     forename: row.forename,
     surname: row.surname,
-    dob: row.dob,
+    dateOfBirth: row.dob,
     nationality: row.driverNationality,
     url: row.driverUrl,
   },
   race: {
-    raceId: row.raceId,
     name: row.raceName,
     round: row.raceRound,
     year: row.raceYear,
     date: row.raceDate,
   },
   constructor: {
-    constructorId: row.constructorId,
-    constructorRef: row.constructorRef,
     name: row.constructorName,
     nationality: row.constructorNationality,
     url: row.constructorUrl,
@@ -56,10 +48,10 @@ router.get('/:raceId', async (req, res) => {
   const { raceId } = req.params;
   try {
     const rows = await db.all(
-      `SELECT q.qualifyId, q.raceId, q.driverId, q.constructorId, q.number, q.position, q.q1, q.q2, q.q3,
-              d.driverRef, d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
+      `SELECT q.qualifyId, q.number, q.position, q.q1, q.q2, q.q3,
+              d.number AS driverNumber, d.code AS driverCode, d.forename, d.surname, d.dob,
               d.nationality AS driverNationality, d.url AS driverUrl,
-              c.constructorRef, c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
+              c.name AS constructorName, c.nationality AS constructorNationality, c.url AS constructorUrl,
               r.name AS raceName, r.round AS raceRound, r.year AS raceYear, r.date AS raceDate
        FROM qualifying q
        INNER JOIN drivers d ON d.driverId = q.driverId
