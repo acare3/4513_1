@@ -1,0 +1,23 @@
+{
+  "name": "assignment_1",
+  "version": "1.0.0",
+  "description": "Formula 1 REST API implemented with Express and SQLite",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "formula1",
+    "express",
+    "sqlite",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7"
+  }
+}
